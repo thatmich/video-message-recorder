@@ -1,24 +1,25 @@
-import logo from './logo.svg';
+import { useContext, useEffect, useState } from 'react';
 import './App.css';
+import VideoSpace from './components/VideoSpace';
+import { SettingsProvider } from './context/SettingsProvider';
+
+// https://dev.to/arjhun777/video-chatting-and-screen-sharing-with-react-node-webrtc-peerjs-18fg
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <SettingsProvider>
+      <div className="App">
+        <div className="prompt">
+        </div>
+        <div className="current-user">
+        </div>
+        <div className="create-space">
+          <VideoSpace />
+        </div>
+
+      </div>
+    </SettingsProvider>
+
   );
 }
 

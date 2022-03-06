@@ -1,0 +1,16 @@
+.error-message, .record-error-message{
+    position: absolute;
+    left: 50%;
+    color: black;
+    z-index: 10;
+    background-color: pink;
+}
+
+.record-error-message{
+    top: 10%;
+    transform: translate(-50%, 0%);
+}
+
+.error-message{
+    transform: translate(-50%, 0%);
+}

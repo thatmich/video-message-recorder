@@ -1,0 +1,16 @@
+.select-prompt, .record{
+    position:relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+    color: black;
+}
+
+.record{
+    height: 6em;
+}
+
+.select-prompt{
+    height: 6em;
+}
