@@ -21,7 +21,7 @@ function Camera(props){
         
         
     }
-    const WebcamComponent = () => <Webcam audio={mic} key={mic} muted={true} videoConstraints={videoConstraints} ref={props.webcamRef} mirrored={true} onUserMediaError={handleCameraError} onUserMedia={handleSuccess}/>;
+    const WebcamComponent = () => <Webcam className="webcam" style={{width: props.imageWidth}} audio={mic} key={mic} muted={true} videoConstraints={videoConstraints} ref={props.webcamRef} mirrored={true} onUserMediaError={handleCameraError} onUserMedia={handleSuccess}/>;
     
     return(
         <div className="camera-frame">

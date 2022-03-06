@@ -8,6 +8,7 @@ import "./VideoSpace.css"
 function VideoSpace() {
     const mediaSettings = useSettings();
     var { screen, camera, mic, compose, cameraError, micError, screenError } = mediaSettings;
+    const [imageWidth, setImageWidth] = useState("600px")
     const webcamRef = useRef(null);
     const screenRef = useRef(null);
     const mediaRecorderRef = useRef(null);
@@ -16,7 +17,7 @@ function VideoSpace() {
 
     const handleStartCaptureClick = useCallback(() => {
         setCapturing(true);
-        mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
+        mediaRecorderRef.current = new MediaRecorder(screenRef.current.srcObject, { //webcamRef.current.stream
             mimeType: "video/webm"
         });
         
@@ -25,7 +26,7 @@ function VideoSpace() {
             handleDataAvailable
         );
         mediaRecorderRef.current.start();
-    }, [webcamRef, setCapturing, mediaRecorderRef]);
+    }, [screenRef, setCapturing, mediaRecorderRef]);
 
     const handleDataAvailable = useCallback(
         ({ data }) => {
@@ -39,7 +40,7 @@ function VideoSpace() {
     const handleStopCaptureClick = useCallback(() => {
         mediaRecorderRef.current.stop();
         setCapturing(false);
-    }, [mediaRecorderRef, webcamRef, setCapturing]);
+    }, [mediaRecorderRef, screenRef, setCapturing]);
 
     const handleDownload = useCallback(() => {
         if (recordedChunks.length) {
@@ -62,26 +63,16 @@ function VideoSpace() {
         {
             x: 0,
             y: 0,
-            width: "800px",
-            height: "450px",
+            width: "1280",
+            height: "720",
         }
     );
     useEffect(() => {
         if (screen && camera) {
-            setCameraSettings({
-                x: 0,
-                y: 0,
-                width: "200",
-                height: "100px",
-            })
+            setImageWidth("200px")
         }
         else if (camera && !screen) {
-            setCameraSettings({
-                x: 0,
-                y: 0,
-                width: "800px",
-                height: "450px",
-            })
+            setImageWidth("600px")
         }
     }, [camera, screen])
 
@@ -104,7 +95,7 @@ function VideoSpace() {
             <video id="screenshare-video" ref={screenRef} autoPlay={true} src={null} style={{ height: "0px" }}></video>
             
             {screen ? <Screenshare /> : null}
-            {(camera) ? <Camera settings={cameraSettings} webcamRef={webcamRef}/> : null}
+            
             {(mic && !camera) ? <>Test</> : null}
             {capturing ? <RecordingMenu/> : null}
             {recordedChunks.length > 0 && (
@@ -112,6 +103,7 @@ function VideoSpace() {
             )}
 
             <SelectPrompt className="settings-selector" handleStart={handleStartCaptureClick}/>
+            {(camera) ? <Camera settings={cameraSettings} webcamRef={webcamRef} imageWidth={imageWidth}/> : null}
 
         </div>
     )

@@ -3,9 +3,14 @@
     left: 25%;
     right:75%;
     z-index: 1;
+    
 }
 
 .blurred{
     opacity: 50%;
     background: black;
+}
+
+.webcam{
+    height: auto;
 }
