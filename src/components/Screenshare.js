@@ -3,6 +3,7 @@ import { useSettings, useSettingsUpdate } from "../context/SettingsProvider";
 
 function Screenshare() {
     const mediaSettings = useSettings();
+    const { mic, screen_audio } = mediaSettings;
     var { screenError } = mediaSettings;
     const mediaUpdateSettings = useSettingsUpdate();
     var videoElement;
@@ -12,21 +13,23 @@ function Screenshare() {
         video: {
             cursor: "always"
         },
-        audio: false
+        audio: !mic,
     };
 
     function handleScreenError() {
         mediaUpdateSettings({ ...mediaSettings, screen: false, screenError: true });
     }
     function handleSuccess() {
+        
+
         mediaUpdateSettings({ ...mediaSettings, screen: true, screenError: false });
     }
-    console.log("HI");
     async function startCapture() {
         videoElement = document.getElementById("screenshare-video");
         try {
+            
             videoElement.srcObject = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
-            videoElement.style.height = "25em"
+            videoElement.style.height = "25em";
             handleSuccess()
         } catch (err) {
             handleScreenError();
@@ -35,14 +38,13 @@ function Screenshare() {
             videoElement.srcObject = null;
         }
     }
-
-
     useEffect(()=>{
         startCapture();
     }, [])
+    
     return (
         <div>
-            
+            {}
         </div>
     );
 }

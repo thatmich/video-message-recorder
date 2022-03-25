@@ -3,31 +3,66 @@ import Webcam from "react-webcam"
 import { useSettings, useSettingsUpdate } from "../context/SettingsProvider";
 import './Camera.css'
 
-function Camera(props){
+function Camera(props) {
     const mediaSettings = useSettings();
     const mediaUpdateSettings = useSettingsUpdate();
-    const {mic} = mediaSettings;
+    const { mic } = mediaSettings;
 
-    function handleCameraError(){
-        mediaUpdateSettings({...mediaSettings, camera: false, cameraError: true});
+    function handleCameraError() {
+        mediaUpdateSettings({ ...mediaSettings, camera: false, cameraError: true, cameraSuccess: false });
     }
-    function handleSuccess(){
-        mediaUpdateSettings({...mediaSettings,  cameraError: false});
+    function handleSuccess() {
+        mediaUpdateSettings({ ...mediaSettings, cameraError: false, cameraSuccess: true});
     }
+
 
     let videoConstraints = {
         height: props.settings.height,
         width: props.settings.width,
-        
-        
     }
-    const WebcamComponent = () => <Webcam className="webcam" style={{width: props.imageWidth}} audio={mic} key={mic} muted={true} videoConstraints={videoConstraints} ref={props.webcamRef} mirrored={true} onUserMediaError={handleCameraError} onUserMedia={handleSuccess}/>;
+
+    // const [active, setActive] = useState(true)
+    // useEffect(() => {
+    //     setActive(true);
+    //     if(props.webcamRef.current !== null){
+    //         console.log(props.webcamRef.current.stream);
+    //     }
+    // }, [active]);
+
+    // const PictureInPictureVideoSrc = () =>{
+    //     if(props.webcamRef.current !== null){
+    //         console.log("HELLO");
+    //         return(
+    //             <video src={props.webcamRef.current.stream}/>
+    //         )
+    //     }
+    //     else{
+    //         return null;
+    //     }
+    // }
+
     
-    return(
-        <div className="camera-frame">
-            {WebcamComponent()}
-        </div>
+
+
+
+    return (
+        <>
+            <Webcam
+                className="webcam"
+                id="webcam1"
+                style={props.bothMedia ? { width: "200px" } : { width: "600px" }}
+                audio={mic}
+                key={mic}
+                muted={true}
+                videoConstraints={videoConstraints}
+                ref={props.webcamRef}
+                mirrored={true}
+                onUserMediaError={handleCameraError}
+                onUserMedia={handleSuccess}
+            />
+        </>
     )
+
 }
 
 export default Camera;

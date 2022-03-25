@@ -20,6 +20,7 @@ export function SettingsProvider({ children }) {
             micError: false,
             screenError: false,
             cameraError: false,
+            cameraSuccess: false,
         }
     )
 

@@ -1,9 +1,6 @@
 .camera-frame{
-    position:absolute;
-    left: 25%;
-    right:75%;
+    position:relative;
     z-index: 1;
-    
 }
 
 .blurred{
@@ -13,4 +10,5 @@
 
 .webcam{
     height: auto;
+    /* temporary margin */
 }

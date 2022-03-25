@@ -1,10 +1,6 @@
-#screenshare-video{
-  max-height: 25em;
-  position:absolute;
-  left: 22%;
-  z-index: 1;
-}
-
-.create-space{
-  padding-top: 10em;
+.App{
+  width:750px;
+  height:auto;
+  border: solid black;
+  box-shadow: 2px 2px 20px black;
 }

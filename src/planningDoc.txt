@@ -1,0 +1,22 @@
+Compose only
+Mic only
+cam only
+screen only // onboard audio is enabled by default, plan to later add toggle
+
+compose + Mic
+compose + cam 
+compose + screen 
+
+cam + Mic
+screen + mic 
+
+cam + screen (full screen)
+cam + screen (full screen) + mic (+compose)
+
+cam + screen (part screen)
+
+functionality based on different browsers
+add a countdown
+improve ui
+
+https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addTrack

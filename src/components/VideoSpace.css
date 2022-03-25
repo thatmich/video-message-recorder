@@ -1,16 +1,19 @@
 .error-message, .record-error-message{
-    position: absolute;
-    left: 50%;
+    position:absolute;
     color: black;
     z-index: 10;
-    background-color: pink;
 }
 
 .record-error-message{
-    top: 10%;
-    transform: translate(-50%, 0%);
+    background: pink;
 }
 
 .error-message{
-    transform: translate(-50%, 0%);
+    background: pink;
 }
+
+#screenshare-video{
+    max-height: 25em;
+    position:relative;
+    z-index: 1;
+  }

@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import './App.css';
+import Camera from './components/Camera';
 import VideoSpace from './components/VideoSpace';
 import { SettingsProvider } from './context/SettingsProvider';
 
@@ -11,14 +12,10 @@ function App() {
       <div className="App">
         <div className="prompt">
         </div>
-        <div className="current-user">
-        </div>
-        <div className="create-space">
           <VideoSpace />
-        </div>
-
       </div>
     </SettingsProvider>
+ 
 
   );
 }

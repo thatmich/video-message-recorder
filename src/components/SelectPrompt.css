@@ -8,9 +8,14 @@
 }
 
 .record{
-    height: 6em;
+    margin-bottom: 1em;
 }
 
 .select-prompt{
-    height: 6em;
+    margin: 1em;
+}
+
+.prompt-button{
+    border-radius: 1em;
+    width:7em;
 }
