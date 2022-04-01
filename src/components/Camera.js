@@ -50,7 +50,7 @@ function Camera(props) {
             <Webcam
                 className="webcam"
                 id="webcam1"
-                style={props.bothMedia ? { width: "200px" } : { width: "600px" }}
+                style={{ width: "600px" }}
                 audio={mic}
                 key={mic}
                 muted={true}
