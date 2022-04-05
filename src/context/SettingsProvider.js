@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';;
+import React, { useContext, useState } from 'react';;
 
 const SettingsContext = React.createContext({});
 const SettingsUpdateContext = React.createContext();
@@ -19,6 +19,7 @@ export function SettingsProvider({ children }) {
             compose: false,
             micError: false,
             screenError: false,
+            screenSuccess: false,
             cameraError: false,
             cameraSuccess: false,
         }

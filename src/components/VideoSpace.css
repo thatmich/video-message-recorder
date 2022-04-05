@@ -17,3 +17,10 @@
     position:relative;
     z-index: 1;
   }
+
+:picture-in-picture #webcam1{
+    box-shadow: 0 0 0 5px red;
+    transform: rotateY(180deg);
+    -webkit-transform:rotateY(180deg); /* Safari and Chrome */
+    -moz-transform:rotateY(180deg); /* Firefox */
+}

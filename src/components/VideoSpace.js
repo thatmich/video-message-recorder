@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useSettings } from "../context/SettingsProvider";
+import { useSettings, useSettingsUpdate } from "../context/SettingsProvider";
 import Screenshare from "./Screenshare"
 import Camera from "./Camera"
 import SelectPrompt from "./SelectPrompt"
@@ -7,20 +7,33 @@ import "./VideoSpace.css"
 
 function VideoSpace() {
     const mediaSettings = useSettings();
-    var { screen, camera, mic, compose, cameraError, cameraSuccess, micError, screenError, screen_audio } = mediaSettings;
+     /* eslint-disable no-unused-vars */
+    var { screen, camera, mic, compose, cameraError, cameraSuccess, micError, screenSuccess, screenError, screen_audio } = mediaSettings;
+    const mediaUpdateSettings = useSettingsUpdate();
     // const [bothMedia, setBothMedia] = useState(false);
     const webcamRef = useRef(null); // webcam video reference
     const screenRef = useRef(null);
     const mediaRecorderRef = useRef(null);
     const [capturing, setCapturing] = useState(false); // boolean for displaying the capture window
+    const [prompting, setPrompt] = useState(true);
     const [recordedChunks, setRecordedChunks] = useState([]);
     const [videoHeight, setVideoHeight] = useState("0px");
     const [inPiP, setInPiP] = useState(false);
+    const [canvasLoading, setCanvasLoading] = useState(false);
+    var stream;
+    var audioStream;
+    var canvas = document.createElement('canvas');
+    const canvasStreamRef = useRef(stream);
+    const audioStreamRef = useRef(audioStream);
+    const canvasRef = useRef(canvas);
+    const [canvasLoaded, setCanvasLoaded] = useState(false);
 
 
-    let audioStream;
 
+    
     function handleStartCaptureClick() {
+        setCapturing(true);
+        setPrompt(false);
         if (screen && !camera) {
             handleStartScreenOnly();
         }
@@ -32,13 +45,13 @@ function VideoSpace() {
         }
         else if (screen && camera) {
             //console.log(screenRef.current.srcObject.getVideoTracks()[0].getSettings().displaySurface)
-            if (screenRef.current.srcObject.getVideoTracks()[0].getSettings().displaySurface == "monitor") {
+            if (screenRef.current.srcObject.getVideoTracks()[0].getSettings().displaySurface === "monitor") {
                 // full screen mode
                 console.log("monitor")
                 handleStartScreenOnly();
 
             }
-            else if (screenRef.current.srcObject.getVideoTracks()[0].getSettings().displaySurface != "monitor") {
+            else if (screenRef.current.srcObject.getVideoTracks()[0].getSettings().displaySurface !== "monitor") {
                 // selected screen mode
                 console.log("not monitor")
                 handleStartCombined();
@@ -48,34 +61,95 @@ function VideoSpace() {
     }
 
     useEffect(() => { // doesn't work for firefox
-        if (cameraSuccess && screen) {
+        if (cameraSuccess && screen && screenRef.current.srcObject != null && screenRef.current.srcObject.getVideoTracks()[0].getSettings().displaySurface === "monitor") {
             const video = document.getElementById("webcam1");
-            console.log(webcamRef.current.stream)
             video.srcObject = webcamRef.current.stream;
             video.style.visibility = "hidden";
             video.style.height = "0px"
-            video.addEventListener('loadedmetadata', () => {
-                video.requestPictureInPicture();
-            });
-            setInPiP(true);
+            if(!inPiP){
+                video.addEventListener('loadedmetadata', () => {
+                    video.requestPictureInPicture();
+                });
+                setInPiP(true);
+            }
+            
         }
-        else if ((cameraSuccess === false && inPiP === true) || (screen === false && inPiP === true)) {
+        else if ((cameraSuccess === false && inPiP === true) || (screen === false && inPiP === true) || (inPiP === true && screenRef.current.srcObject != null && screenRef.current.srcObject.getVideoTracks()[0].getSettings().displaySurface !== "monitor")) {
             document.exitPictureInPicture();
             setInPiP(false);
         }
-    }, [cameraSuccess, screen, mic, camera])
+        else if (cameraSuccess && screen && screenRef.current.srcObject != null && screenRef.current.srcObject.getVideoTracks()[0].getSettings().displaySurface !== "monitor"){
+            const camVideo = document.getElementById("webcam1");
+            const screenVideo = document.getElementById("screenshare-video");
+            camVideo.style.visibility = "hidden";
+            camVideo.style.height = "0px";
+            screenVideo.style.visibility = "hidden";
+            screenVideo.style.height = "0px";
+            setCanvasLoading(true);
+
+        }
+    }, [cameraSuccess, camera, screenSuccess, screen, mic, inPiP])
+
+    useEffect(()=>{
+        
+        function loadCanvas(){
+            let canv = canvasRef.current;
+            // canvas
+            canv.id = "canvas1";
+            //canvas.visibility = "hidden";
+    
+            
+            canv.height = screenRef.current.videoHeight;
+            canv.width = screenRef.current.videoWidth;
+            let camWidth = canv.width/4;
+            let camHeight = camWidth * (webcamRef.current.video.videoHeight/webcamRef.current.video.videoWidth);
+            document.body.appendChild(canv);
+            canvasStreamRef.current = canv.captureStream(30 /*fps*/ );
+            webcamRef.current.video.addEventListener('playing', function(){
+                loop(canv, camWidth, camHeight);
+            });
+        }
+    
+        
+        function loop(c, w, h) {
+            var ctx = c.getContext("2d");
+            //https://stackoverflow.com/questions/44156528/canvas-doesnt-repaint-when-tab-inactive-backgrounded-for-recording-webgl
+
+            if (webcamRef.current != null && webcamRef.current.video != null && screenRef.current != null &&
+                webcamRef.current.stream.getTracks()[0].readyState !== 'ended') {
+                if (isNaN(h)) {
+                    h = w * (webcamRef.current.video.videoHeight / webcamRef.current.video.videoWidth);
+                }
+                ctx.drawImage(screenRef.current, 0, 0);
+                ctx.drawImage(webcamRef.current.video, 0, 0, w, h);
+
+                requestAnimationFrame(function(){
+                    loop(c, w, h);
+                });
+            }
+            else{
+                console.log("Ending Recording");
+                setCanvasLoaded(false);
+            }
+            
+        };
+    
+        if(canvasLoading === true){
+            loadCanvas();
+            setCanvasLoaded(true);
+        }
+    }, [canvasLoading, capturing])
 
     useEffect(() => {
         const micCheck = async () => {
             if (mic) {
-                audioStream = await navigator.mediaDevices.getUserMedia({
+                audioStreamRef.current = await navigator.mediaDevices.getUserMedia({
                     audio: true
                 });
             }
             else {
-                audioStream = undefined;
+                audioStreamRef.current = undefined;
             }
-            //console.log(audioStream);
         };
         micCheck();
     }, [mic])
@@ -90,113 +164,15 @@ function VideoSpace() {
         if (screen === true) {
             setVideoHeight("700px")
         }
-        else if (screen === true) {
+        else if (screen === false) {
             setVideoHeight("0px");
+            if(screenRef.current.srcObject != null){
+                let tracks = screenRef.current.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+                screenRef.current.srcObject = null;
+            }
         }
     }, [camera, screen])
-
-    const handleStartScreenOnly = useCallback(() => {
-        setCapturing(true);
-        if (audioStream) {
-            console.log(audioStream)
-            screenRef.current.srcObject.addTrack(audioStream.getAudioTracks()[0]);
-        }
-        mediaRecorderRef.current = new MediaRecorder(screenRef.current.srcObject);
-        //console.log(screen_audio)
-        mediaRecorderRef.current.addEventListener(
-            "dataavailable",
-            handleDataAvailable
-        );
-        // countdown?
-        mediaRecorderRef.current.start();
-    }, [screenRef, mediaRecorderRef, mic]);
-
-
-    const handleStartCamOnly = useCallback(() => {
-        setCapturing(true);
-        mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, { //webcamRef.current.stream
-            mimeType: "video/webm"
-        });
-
-
-        var canvas = document.createElement('canvas');
-        canvas.id = "canvas1";
-        //canvas.visibility = "hidden";
-
-        var ctx = canvas.getContext("2d");
-        canvas.height = screenRef.current.videoHeight;
-        canvas.width = screenRef.current.videoWidth;
-        ctx.fillStyle = "lightblue";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        function loop() {
-            console.log(typeof webcamRef.current);
-            if (webcamRef.current !== undefined && !webcamRef.current.paused && !webcamRef.current.ended) {
-                console.log(webcamRef.current)
-                ctx.drawImage(webcamRef.current.video, 0, 0);
-                setTimeout(loop, 1000 / 30); // drawing at 30fps
-            }
-        };
-        loop();
-        document.body.appendChild(canvas);
-
-
-        mediaRecorderRef.current.addEventListener(
-            "dataavailable",
-            handleDataAvailable
-        );
-        mediaRecorderRef.current.start();
-    }, [webcamRef, setCapturing, mediaRecorderRef]);
-
-
-    const handleStartMicOnly = useCallback(() => {
-        setCapturing(true);
-        mediaRecorderRef.current = new MediaRecorder(audioStream);
-        mediaRecorderRef.current.addEventListener(
-            "dataavailable",
-            handleDataAvailable
-        );
-        mediaRecorderRef.current.start();
-    });
-
-    const handleStartCombined = useCallback(() => {
-        
-        // countdown?
-
-        // canvas
-        var canvas = document.createElement('canvas');
-        canvas.id = "canvas1";
-        //canvas.visibility = "hidden";
-
-        var ctx = canvas.getContext("2d");
-        canvas.height = screenRef.current.videoHeight;
-        canvas.width = screenRef.current.videoWidth;
-        ctx.fillStyle = "lightblue";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        function loop() {
-            let camWidth = canvas.width/4;
-            let camHeight = camWidth * (webcamRef.current.video.videoHeight/webcamRef.current.video.videoWidth);
-            if (webcamRef.current !== undefined && !screenRef.current.paused && !screenRef.current.ended && !webcamRef.current.paused && !webcamRef.current.ended) {
-                ctx.drawImage(screenRef.current, 0, 0);
-                ctx.drawImage(webcamRef.current.video, 0, canvas.height - camHeight, camWidth, camHeight);
-                setTimeout(loop, 1000 / 30); // drawing at 30fps
-            }
-        };
-        loop();
-        document.body.appendChild(canvas);     
-        
-        // recording
-        setCapturing(true);
-        var stream = canvas.captureStream(30 /*fps*/ );
-        mediaRecorderRef.current = new MediaRecorder(stream);
-        mediaRecorderRef.current.addEventListener(
-            "dataavailable",
-            handleDataAvailable
-        );
-        mediaRecorderRef.current.start();
-
-    }, [webcamRef, screenRef, mic])
 
     const handleDataAvailable = useCallback(
         ({ data }) => {
@@ -207,16 +183,112 @@ function VideoSpace() {
         [setRecordedChunks]
     );
 
+    const handleStartScreenOnly = useCallback(() => {
+        
+        if (audioStreamRef.current) {
+            console.log(audioStreamRef.current)
+            screenRef.current.srcObject.addTrack(audioStreamRef.current.getAudioTracks()[0]);
+        }
+        mediaRecorderRef.current = new MediaRecorder(screenRef.current.srcObject);
+        //console.log(screen_audio)
+        mediaRecorderRef.current.addEventListener(
+            "dataavailable",
+            handleDataAvailable
+        );
+        // countdown?
+        mediaRecorderRef.current.start();
+    }, [screenRef, mediaRecorderRef, handleDataAvailable]);
+
+
+    const handleStartCamOnly = useCallback(() => {
+        mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, { //webcamRef.current.stream
+            mimeType: "video/webm"
+        });
+        mediaRecorderRef.current.addEventListener(
+            "dataavailable",
+            handleDataAvailable
+        );
+        mediaRecorderRef.current.start();
+    }, [webcamRef, mediaRecorderRef, handleDataAvailable]);
+
+
+    const handleStartMicOnly = useCallback(() => {
+        mediaRecorderRef.current = new MediaRecorder(audioStreamRef.current);
+        mediaRecorderRef.current.addEventListener(
+            "dataavailable",
+            handleDataAvailable
+        );
+        mediaRecorderRef.current.start();
+    }, [audioStreamRef, mediaRecorderRef, handleDataAvailable]);
+
+    const handleStartCombined = useCallback(() => {
+        
+        // countdown?
+        
+        // recording
+        mediaRecorderRef.current = new MediaRecorder(canvasStreamRef.current);
+        mediaRecorderRef.current.addEventListener(
+            "dataavailable",
+            handleDataAvailable
+        );
+        mediaRecorderRef.current.start();
+
+    }, [canvasStreamRef, handleDataAvailable])
+
     const handleStopCaptureClick = useCallback(() => {
         mediaRecorderRef.current.stop();
+        if(audioStreamRef.current != null){
+            let tracks = audioStreamRef.current.getAudioTracks();
+            tracks.forEach(function (track) {
+                track.stop();
+            });
+        }
+        if(webcamRef.current != null){
+            let tracks1 = webcamRef.current.stream.getTracks();
+            tracks1.forEach(function (track) {
+                track.stop();
+            });
+            webcamRef.current.video.style.height = 0;
+        }
+        console.log(screenRef.current.srcObject);
+        if(screenRef.current.srcObject != null){
+            let tracks2 = screenRef.current.srcObject.getTracks();
+            tracks2.forEach(function (track) {
+                track.stop();
+            });
+            console.log(screenRef.current)
+            screenRef.current.style.height = 0;
+        }
+
+        
         setCapturing(false);
-    }, [mediaRecorderRef, setCapturing]);
+        setCanvasLoading(false);
+        mediaUpdateSettings(
+            {
+                screen: false,
+                camera: false,
+                mic: false,
+                compose: false,
+                micError: false,
+                screenError: false,
+                screenSuccess: false,
+                cameraError: false,
+                cameraSuccess: false,
+            })
+
+        // canvas
+        const canvasObj = document.getElementById("canvas1");
+        if(canvasObj){
+            canvasObj.parentNode.removeChild(canvasObj);
+        }
+    }, [mediaRecorderRef]);
 
 
     const handleDownload = useCallback(() => {
         if (recordedChunks.length) {
+            console.log("hi")
             const blob = new Blob(recordedChunks);
-            const url = URL.createObjectURL(blob);
+            var url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             document.body.appendChild(a);
             a.style = "display: none";
@@ -224,10 +296,16 @@ function VideoSpace() {
             a.download = "react-webcam-stream-capture.mp4";
             a.click();
             window.URL.revokeObjectURL(url);
-
-            setRecordedChunks([]);
+            a.remove();
         }
     }, [recordedChunks]);
+
+    const onReturn = () => {
+        setPrompt(true);
+        setRecordedChunks([]);
+        
+
+    }
 
 
     const [cameraSettings, setCameraSettings] = useState(
@@ -249,15 +327,20 @@ function VideoSpace() {
     )
     // bothMedia={bothMedia} key={bothMedia} in camera
 
+    const FinishMenu = () => (
+        <>
+            <button className="videospace-button" onClick={handleDownload}>Download Video</button>
+            <button className="videospace-button" onClick={onReturn}>Record Again</button>
+        </>
+    )
+
     return (
         <div className="video-space">
             {(cameraError || micError || screenError) ? <div className="error-mesasage">Please enable media permissions!</div> : null}
             {(screen && mic) ? <div className="error-mesasage onboard-audio">Reminder: yet to implement mic and system audio simultaneous recording. Using system audio if available.</div> : null}
             {capturing ? <RecordingMenu /> : null}
-            {recordedChunks.length > 0 && (
-                <button onClick={handleDownload}>Download1</button>
-            )}
-            <SelectPrompt className="settings-selector" handleStart={handleStartCaptureClick} webcamRef={webcamRef} />
+            {recordedChunks.length > 0 ? <FinishMenu /> :null}
+            {prompting && !capturing ? <SelectPrompt className="settings-selector" handleStart={handleStartCaptureClick} webcamRef={webcamRef} /> : null}
             <video id="screenshare-video" ref={screenRef} autoPlay={true} src={null} muted={true} style={{ height: videoHeight }}></video>
             {(camera) ? <Camera settings={cameraSettings} webcamRef={webcamRef} /> : null}
             {screen ? <Screenshare /> : null}

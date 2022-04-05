@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useSettings, useSettingsUpdate } from '../context/SettingsProvider';
 import './SelectPrompt.css'
 
@@ -9,7 +9,6 @@ function SelectPrompt(props) {
     var { screen, camera, mic, compose, cameraSuccess } = mediaSettings;
 
     const [cantRecord, setRecordError] = useState(false);
-    const [isRecording, setIsRecord] = useState(false);
    
 
     const whiteColor = "#FFFFFF";
@@ -70,7 +69,6 @@ function SelectPrompt(props) {
         }
         else {
             setRecordError(false);
-            setIsRecord(true);
             props.handleStart();
         }
     }
@@ -94,9 +92,9 @@ function SelectPrompt(props) {
     
 
     return (
-        <div>
-            {isRecording ? null : <Settings />}
-        </div>
+        <>
+            <Settings />
+        </>
     )
 }
 

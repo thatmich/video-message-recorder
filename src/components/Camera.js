@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React from "react"
 import Webcam from "react-webcam"
 import { useSettings, useSettingsUpdate } from "../context/SettingsProvider";
 import './Camera.css'
@@ -56,7 +56,7 @@ function Camera(props) {
                 muted={true}
                 videoConstraints={videoConstraints}
                 ref={props.webcamRef}
-                mirrored={true}
+                // mirrored={true}
                 onUserMediaError={handleCameraError}
                 onUserMedia={handleSuccess}
             />

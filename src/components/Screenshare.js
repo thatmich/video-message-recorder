@@ -3,8 +3,7 @@ import { useSettings, useSettingsUpdate } from "../context/SettingsProvider";
 
 function Screenshare() {
     const mediaSettings = useSettings();
-    const { mic, screen_audio } = mediaSettings;
-    var { screenError } = mediaSettings;
+    const { mic, screen } = mediaSettings;
     const mediaUpdateSettings = useSettingsUpdate();
     var videoElement;
 
@@ -17,12 +16,10 @@ function Screenshare() {
     };
 
     function handleScreenError() {
-        mediaUpdateSettings({ ...mediaSettings, screen: false, screenError: true });
+        mediaUpdateSettings({ ...mediaSettings, screen: false, screenError: true, screenSuccess: false });
     }
     function handleSuccess() {
-        
-
-        mediaUpdateSettings({ ...mediaSettings, screen: true, screenError: false });
+        mediaUpdateSettings({ ...mediaSettings, screen: true, screenError: false, screenSuccess: true });
     }
     async function startCapture() {
         videoElement = document.getElementById("screenshare-video");
@@ -40,6 +37,7 @@ function Screenshare() {
     }
     useEffect(()=>{
         startCapture();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
     
     return (

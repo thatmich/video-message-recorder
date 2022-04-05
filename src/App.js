@@ -1,6 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
 import './App.css';
-import Camera from './components/Camera';
 import VideoSpace from './components/VideoSpace';
 import { SettingsProvider } from './context/SettingsProvider';
 
