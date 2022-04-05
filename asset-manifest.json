@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/video-message-recorder/static/css/main.be3b3779.css",
+    "main.js": "/video-message-recorder/static/js/main.b57f59ea.js",
+    "index.html": "/video-message-recorder/index.html",
+    "main.be3b3779.css.map": "/video-message-recorder/static/css/main.be3b3779.css.map",
+    "main.b57f59ea.js.map": "/video-message-recorder/static/js/main.b57f59ea.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.be3b3779.css",
+    "static/js/main.b57f59ea.js"
+  ]
+}
