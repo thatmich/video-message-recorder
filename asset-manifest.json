@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/video-message-recorder/static/css/main.7b6c855b.css",
-    "main.js": "/video-message-recorder/static/js/main.268fab6c.js",
+    "main.css": "/video-message-recorder/static/css/main.2a4760e9.css",
+    "main.js": "/video-message-recorder/static/js/main.0811f558.js",
     "index.html": "/video-message-recorder/index.html",
-    "main.7b6c855b.css.map": "/video-message-recorder/static/css/main.7b6c855b.css.map",
-    "main.268fab6c.js.map": "/video-message-recorder/static/js/main.268fab6c.js.map"
+    "main.2a4760e9.css.map": "/video-message-recorder/static/css/main.2a4760e9.css.map",
+    "main.0811f558.js.map": "/video-message-recorder/static/js/main.0811f558.js.map"
   },
   "entrypoints": [
-    "static/css/main.7b6c855b.css",
-    "static/js/main.268fab6c.js"
+    "static/css/main.2a4760e9.css",
+    "static/js/main.0811f558.js"
   ]
 }
