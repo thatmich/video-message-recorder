@@ -7,7 +7,7 @@ import "./VideoSpace.css"
 
 function VideoSpace() {
     const mediaSettings = useSettings();
-     /* eslint-disable no-unused-vars */
+    /* eslint-disable no-unused-vars */
     var { screen, camera, mic, compose, cameraError, cameraSuccess, micError, screenSuccess, screenError, screen_audio } = mediaSettings;
     const mediaUpdateSettings = useSettingsUpdate();
     // const [bothMedia, setBothMedia] = useState(false);
@@ -28,9 +28,6 @@ function VideoSpace() {
     const canvasRef = useRef(canvas);
     const [canvasLoaded, setCanvasLoaded] = useState(false);
 
-
-
-    
     function handleStartCaptureClick() {
         setCapturing(true);
         setPrompt(false);
@@ -62,23 +59,25 @@ function VideoSpace() {
 
     useEffect(() => { // doesn't work for firefox
         if (cameraSuccess && screen && screenRef.current.srcObject != null && screenRef.current.srcObject.getVideoTracks()[0].getSettings().displaySurface === "monitor") {
+            console.log("Monitor");
             const video = document.getElementById("webcam1");
             video.srcObject = webcamRef.current.stream;
             video.style.visibility = "hidden";
             video.style.height = "0px"
-            if(!inPiP){
+            if (!inPiP) {
                 video.addEventListener('loadedmetadata', () => {
                     video.requestPictureInPicture();
                 });
                 setInPiP(true);
             }
-            
         }
+
         else if ((cameraSuccess === false && inPiP === true) || (screen === false && inPiP === true) || (inPiP === true && screenRef.current.srcObject != null && screenRef.current.srcObject.getVideoTracks()[0].getSettings().displaySurface !== "monitor")) {
             document.exitPictureInPicture();
             setInPiP(false);
         }
-        else if (cameraSuccess && screen && screenRef.current.srcObject != null && screenRef.current.srcObject.getVideoTracks()[0].getSettings().displaySurface !== "monitor"){
+        else if (cameraSuccess && screenSuccess && screenRef.current.srcObject != null && screenRef.current.srcObject.getVideoTracks()[0].getSettings().displaySurface !== "monitor") {
+            console.log("HELLO")
             const camVideo = document.getElementById("webcam1");
             const screenVideo = document.getElementById("screenshare-video");
             camVideo.style.visibility = "hidden";
@@ -86,35 +85,54 @@ function VideoSpace() {
             screenVideo.style.visibility = "hidden";
             screenVideo.style.height = "0px";
             setCanvasLoading(true);
-
         }
     }, [cameraSuccess, camera, screenSuccess, screen, mic, inPiP])
 
-    useEffect(()=>{
-        
-        function loadCanvas(){
+    useEffect(() => {
+
+        function loadCanvas() {
             let canv = canvasRef.current;
+            const currentDiv = document.getElementById("canvas-space");
             // canvas
             canv.id = "canvas1";
             //canvas.visibility = "hidden";
-    
-            
-            canv.height = screenRef.current.videoHeight;
-            canv.width = screenRef.current.videoWidth;
-            let camWidth = canv.width/4;
-            let camHeight = camWidth * (webcamRef.current.video.videoHeight/webcamRef.current.video.videoWidth);
+            if (screenRef.current.readyState === HTMLMediaElement.HAVE_NOTHING) {
+                // default
+                canv.height = 300;
+                canv.width = 1080;
+            }
+            else {
+                canv.height = screenRef.current.videoHeight;
+                canv.width = screenRef.current.videoWidth;
+            }
+
+            let camWidth = canv.width / 4;
+            let camHeight = camWidth * (webcamRef.current.video.videoHeight / webcamRef.current.video.videoWidth);
             document.body.appendChild(canv);
-            canvasStreamRef.current = canv.captureStream(30 /*fps*/ );
-            webcamRef.current.video.addEventListener('playing', function(){
-                loop(canv, camWidth, camHeight);
-            });
+            canvasStreamRef.current = canv.captureStream(30 /*fps*/);
+            currentDiv.appendChild(canv);
+            canv.style.marginLeft = 0;
+            canv.style.marginRight = 0;
+            loop(canv, camWidth, camHeight);
+            // webcamRef.current.video.addEventListener('playing', function () {
+            //     loop(canv, camWidth, camHeight);
+            // });
         }
-    
-        
+
+
         function loop(c, w, h) {
             var ctx = c.getContext("2d");
+            let canv = canvasRef.current;
             //https://stackoverflow.com/questions/44156528/canvas-doesnt-repaint-when-tab-inactive-backgrounded-for-recording-webgl
-
+            if (screenRef.current.readyState === HTMLMediaElement.HAVE_NOTHING) {
+                // default
+                canv.height = 300;
+                canv.width = 1080;
+            }
+            else {
+                canv.height = screenRef.current.videoHeight;
+                canv.width = screenRef.current.videoWidth;
+            }
             if (webcamRef.current != null && webcamRef.current.video != null && screenRef.current != null &&
                 webcamRef.current.stream.getTracks()[0].readyState !== 'ended') {
                 if (isNaN(h)) {
@@ -123,18 +141,18 @@ function VideoSpace() {
                 ctx.drawImage(screenRef.current, 0, 0);
                 ctx.drawImage(webcamRef.current.video, 0, 0, w, h);
 
-                requestAnimationFrame(function(){
+                requestAnimationFrame(function () {
                     loop(c, w, h);
                 });
             }
-            else{
+            else {
                 console.log("Ending Recording");
                 setCanvasLoaded(false);
             }
-            
+
         };
-    
-        if(canvasLoading === true){
+
+        if (canvasLoading === true) {
             loadCanvas();
             setCanvasLoaded(true);
         }
@@ -166,7 +184,7 @@ function VideoSpace() {
         }
         else if (screen === false) {
             setVideoHeight("0px");
-            if(screenRef.current.srcObject != null){
+            if (screenRef.current.srcObject != null) {
                 let tracks = screenRef.current.srcObject.getTracks();
                 tracks.forEach(track => track.stop());
                 screenRef.current.srcObject = null;
@@ -184,7 +202,7 @@ function VideoSpace() {
     );
 
     const handleStartScreenOnly = useCallback(() => {
-        
+
         if (audioStreamRef.current) {
             console.log(audioStreamRef.current)
             screenRef.current.srcObject.addTrack(audioStreamRef.current.getAudioTracks()[0]);
@@ -222,11 +240,12 @@ function VideoSpace() {
     }, [audioStreamRef, mediaRecorderRef, handleDataAvailable]);
 
     const handleStartCombined = useCallback(() => {
-        
+
         // countdown?
-        
+
         // recording
         mediaRecorderRef.current = new MediaRecorder(canvasStreamRef.current);
+
         mediaRecorderRef.current.addEventListener(
             "dataavailable",
             handleDataAvailable
@@ -237,13 +256,13 @@ function VideoSpace() {
 
     const handleStopCaptureClick = useCallback(() => {
         mediaRecorderRef.current.stop();
-        if(audioStreamRef.current != null){
+        if (audioStreamRef.current != null) {
             let tracks = audioStreamRef.current.getAudioTracks();
             tracks.forEach(function (track) {
                 track.stop();
             });
         }
-        if(webcamRef.current != null){
+        if (webcamRef.current != null) {
             let tracks1 = webcamRef.current.stream.getTracks();
             tracks1.forEach(function (track) {
                 track.stop();
@@ -251,7 +270,7 @@ function VideoSpace() {
             webcamRef.current.video.style.height = 0;
         }
         console.log(screenRef.current.srcObject);
-        if(screenRef.current.srcObject != null){
+        if (screenRef.current.srcObject != null) {
             let tracks2 = screenRef.current.srcObject.getTracks();
             tracks2.forEach(function (track) {
                 track.stop();
@@ -260,7 +279,7 @@ function VideoSpace() {
             screenRef.current.style.height = 0;
         }
 
-        
+
         setCapturing(false);
         setCanvasLoading(false);
         mediaUpdateSettings(
@@ -278,7 +297,7 @@ function VideoSpace() {
 
         // canvas
         const canvasObj = document.getElementById("canvas1");
-        if(canvasObj){
+        if (canvasObj) {
             canvasObj.parentNode.removeChild(canvasObj);
         }
     }, [mediaRecorderRef]);
@@ -303,7 +322,7 @@ function VideoSpace() {
     const onReturn = () => {
         setPrompt(true);
         setRecordedChunks([]);
-        
+
 
     }
 
@@ -321,29 +340,42 @@ function VideoSpace() {
         <>
             <div className="recordingMenu">
                 {/* <button id="pauseRecordBtn" onClick={onPause}>Pause Recording</button> */}
-                <button id="stopRecordBtn" onClick={handleStopCaptureClick}>Stop Recording</button>
+                <button className="recordBtn" id="stopRecordBtn" onClick={handleStopCaptureClick}>Stop Recording</button>
             </div>
         </>
     )
     // bothMedia={bothMedia} key={bothMedia} in camera
 
     const FinishMenu = () => (
-        <>
-            <button className="videospace-button" onClick={handleDownload}>Download Video</button>
-            <button className="videospace-button" onClick={onReturn}>Record Again</button>
-        </>
+        <div className="finishMenu">
+            <button className="recordBtn" onClick={handleDownload}>Download Video</button>
+            <button className="recordBtn" onClick={onReturn}>Record Again</button>
+        </div>
     )
-
+    var isChrome = navigator.userAgent.includes("Chrome") && navigator.vendor.includes("Google Inc");
     return (
-        <div className="video-space">
-            {(cameraError || micError || screenError) ? <div className="error-mesasage">Please enable media permissions!</div> : null}
-            {(screen && mic) ? <div className="error-mesasage onboard-audio">Reminder: yet to implement mic and system audio simultaneous recording. Using system audio if available.</div> : null}
+        <div className="video-space" id="main-space">
+            {(!isChrome) ? <div className="error-message">Please use Chrome or Edge for the full experience.</div> : null}
+            {(cameraError || micError || screenError) ? <div className="error-message">Please enable media permissions!</div> : null}
+            {/* {(screen && mic) ? <div className="error-mesasage onboard-audio">Reminder: yet to implement mic and system audio simultaneous recording. Using system audio if available.</div> : null} */}
             {capturing ? <RecordingMenu /> : null}
-            {recordedChunks.length > 0 ? <FinishMenu /> :null}
+            {recordedChunks.length > 0 ? <FinishMenu /> : null}
             {prompting && !capturing ? <SelectPrompt className="settings-selector" handleStart={handleStartCaptureClick} webcamRef={webcamRef} /> : null}
-            <video id="screenshare-video" ref={screenRef} autoPlay={true} src={null} muted={true} style={{ height: videoHeight }}></video>
-            {(camera) ? <Camera settings={cameraSettings} webcamRef={webcamRef} /> : null}
-            {screen ? <Screenshare /> : null}
+            <div className="video-box">
+                <div id="canvas-space" style={{ position: "absolute" }}>
+                </div>
+                {(!screen || !mic || !camera) ?
+                    <p className="prompt-message">
+                        Please select a video/audio source</p> : null}
+                <div style={{ position: "absolute" }}>
+                    <video id="screenshare-video" ref={screenRef} autoPlay={true} src={null} muted={true} style={{ height: videoHeight }}></video>
+                </div>
+
+
+                {(camera) ? <Camera settings={cameraSettings} webcamRef={webcamRef} /> : null}
+                {screen ? <Screenshare /> : null}
+            </div>
+
         </div>
     )
 }

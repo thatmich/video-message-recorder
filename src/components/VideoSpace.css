@@ -1,26 +1,67 @@
-.error-message, .record-error-message{
-    position:absolute;
+.error-message,
+.record-error-message {
     color: black;
     z-index: 10;
 }
 
-.record-error-message{
+.record-error-message {
     background: pink;
 }
 
-.error-message{
+.error-message {
     background: pink;
+    text-align: center;
+    margin: 0 0 1.5% 0
 }
 
-#screenshare-video{
+/* #screenshare-video {
+    display: block;
     max-height: 25em;
-    position:relative;
+    position: relative;
     z-index: 1;
-  }
+    margin-left: auto;
+    margin-right: auto
+} */
 
-:picture-in-picture #webcam1{
+:picture-in-picture #webcam1 {
     box-shadow: 0 0 0 5px red;
     transform: rotateY(180deg);
-    -webkit-transform:rotateY(180deg); /* Safari and Chrome */
-    -moz-transform:rotateY(180deg); /* Firefox */
+    -webkit-transform: rotateY(180deg);
+    /* Safari and Chrome */
+    -moz-transform: rotateY(180deg);
+    /* Firefox */
+}
+
+#canvas1 {
+    display: block;
+    max-height: 25em;
+    position: relative;
+    z-index: 1;
+    width: auto;
+    margin-left: auto;
+    margin-right: auto
+}
+
+.video-box {
+    display:block;
+    margin-top: 1em;
+    margin-left:auto;
+    margin-right: auto;
+    width: 100%;
+    height: 25em;
+    border: solid grey;
+    border-radius: 20px;
+}
+
+.prompt-message{
+    color: grey;
+    position: absolute;
+    margin-left: 1em;
+}
+
+.finishMenu{
+    position: relative;
+    display: flex;
+    justify-content: center;
+    z-index: 2;
 }
